@@ -19,6 +19,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/kikitrade/api-gateway-client.git"
   },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "keywords": [
     "alibaba",
     "cloud",
