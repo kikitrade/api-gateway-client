@@ -1,0 +1,33 @@
+{
+  "name": "@kikitrade/api-gateway-client",
+  "version": "1.0.0",
+  "description": "alibaba cloud open api gateway two way communication library",
+  "main": "./dist/ws.js",
+  "types": "./dist/ws.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "holly.hao@gwave.io",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "uuid": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kikitrade/api-gateway-client.git"
+  },
+  "keywords": [
+    "alibaba",
+    "cloud",
+    "open",
+    "gateway",
+    "api"
+  ],
+  "bugs": {
+    "url": "https://github.com/kikitrade/api-gateway-client/issues"
+  },
+  "homepage": "https://github.com/kikitrade/api-gateway-client#readme"
+}
