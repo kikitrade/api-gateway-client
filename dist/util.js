@@ -1,20 +1,12 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const url_1 = require("url");
-const crypto_1 = __importDefault(require("crypto"));
-const uuid_1 = __importDefault(require("uuid"));
+import { parse } from 'url';
+import CryptoJS from 'crypto-js';
+import uuid from 'uuid';
 const Content_Type_Form_Data = 'application/x-www-form-urlencoded';
-exports.Content_Type_Form_Data = Content_Type_Form_Data;
 const Content_Type_Json_Data = 'application/json';
-exports.Content_Type_Json_Data = Content_Type_Json_Data;
 let seq = 1;
 function seqInc() {
     return seq++;
 }
-exports.seqInc = seqInc;
 class Util {
     constructor(key, secret, stage) {
         this.appKey = key;
@@ -58,13 +50,10 @@ class Util {
         return list.join('');
     }
     sign(stringToSign) {
-        return crypto_1.default.createHmac('sha256', this.appSecret)
-            .update(stringToSign, 'utf8').digest('base64');
+        return CryptoJS.HmacSHA256(stringToSign, this.appSecret).toString(CryptoJS.enc.Base64);
     }
     md5(content) {
-        return crypto_1.default.createHash('md5')
-            .update(content, 'utf8')
-            .digest('base64');
+        return CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
     }
     getSignHeaderKeys(headers) {
         var keys = Object.keys(headers).sort();
@@ -107,7 +96,7 @@ class Util {
             'ca_version': '1',
             'x-ca-timestamp': Date.now(),
             'x-ca-key': this.appKey,
-            'x-ca-nonce': uuid_1.default.v4(),
+            'x-ca-nonce': uuid.v4(),
             'x-ca-seq': new Number(seqInc()).toString(),
             'x-ca-stage': this.stage,
         }, headers, extra);
@@ -138,10 +127,10 @@ class Util {
         let signHeaderKeys = this.getSignHeaderKeys(headers);
         headers['x-ca-signature-headers'] = signHeaderKeys.join(',');
         let signedHeadersStr = this.getSignedHeadersString(signHeaderKeys, headers);
-        let parsedUrl = url_1.parse(url, true);
+        let parsedUrl = parse(url, true);
         let stringToSign = this.buildStringToSign(method, headers, signedHeadersStr, parsedUrl, body);
         headers['x-ca-signature'] = this.sign(stringToSign);
         return headers;
     }
 }
-exports.Util = Util;
+export { Util, seqInc, Content_Type_Form_Data, Content_Type_Json_Data };

@@ -1,4 +1,4 @@
-import { WebSocketApiType } from './util';
+import { WebSocketApiType, FormData } from './util';
 import Timeout = NodeJS.Timeout;
 interface EventListener {
     (msg: any): void;
@@ -8,13 +8,13 @@ interface Config {
     registerPath?: string;
     unregisterPath?: string;
     authType: 'appCode' | 'accessKey' | 'none';
-    stage: 'STAGE' | 'RELEASE';
+    stage: 'TEST' | 'RELEASE';
     appCode?: string;
     appKey?: string;
     appSecret?: string;
 }
 declare class WS {
-    ws: WebSocket;
+    ws: WebSocket | null;
     registered: boolean;
     registerResp: boolean;
     hbStarted: boolean;
@@ -25,7 +25,7 @@ declare class WS {
     host: string;
     config: Config;
     constructor(config: Config);
-    register(update: EventListener, deviceId: string, bodyInJson?: string): void;
+    register(update: EventListener, deviceId: string, bodyInJson?: string | FormData): void;
     unregister(body?: string | FormData): void;
     send(method: string, path: string, webSocketApiType?: WebSocketApiType, body?: string | FormData): void;
     private regMsg;

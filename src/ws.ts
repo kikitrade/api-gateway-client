@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import {Content_Type_Form_Data, Content_Type_Json_Data, seqInc, Util, WebSocketApiType} from './util';
+import {Content_Type_Form_Data, Content_Type_Json_Data, seqInc, Util, WebSocketApiType, FormData} from './util';
 import url, {parse} from 'url';
 import Timeout = NodeJS.Timeout;
 
@@ -12,14 +12,14 @@ interface Config {
     registerPath?: string;
     unregisterPath?: string;
     authType: 'appCode' | 'accessKey' | 'none';
-    stage: 'STAGE' | 'RELEASE';
+    stage: 'TEST' | 'RELEASE';
     appCode?: string;
     appKey?: string;
     appSecret?: string;
 }
 
 class WS {
-    ws: WebSocket;
+    ws: WebSocket | null;
     registered = false;
     registerResp = false;
     hbStarted = false;
@@ -40,17 +40,15 @@ class WS {
         if (config.unregisterPath) {
             this.unregisterPath = config.unregisterPath;
         }
-        this.ws = new WebSocket(this.config.url);
+        this.ws = null;
     }
 
-    register(update: EventListener, deviceId: string, bodyInJson?: string) {
-        if (this.registered) {
-            throw new Error('unregister the previous subscription to call register');
-        }
+    register(update: EventListener, deviceId: string, bodyInJson?: string|FormData) {
+        this.ws = new WebSocket(this.config.url);
         let that = this;
         this.ws.onopen = function open() {
             console.log('open:');
-            that.ws.send('RG#' + deviceId);
+            that.ws!.send('RG#' + deviceId);
         };
 
         this.ws.onmessage = function incoming(event) {
@@ -71,12 +69,12 @@ class WS {
                 if (!that.registered) {
                     that.registered = true;
                     let reg = that.regMsg(that.host, that.registerPath, bodyInJson);
-                    that.ws.send(JSON.stringify(reg));
+                    that.ws!.send(JSON.stringify(reg));
                 }
 
                 that.hbStarted = true;
                 that.timer = setInterval(function () {
-                    that.ws.send('H1');
+                    that.ws!.send('H1');
                 }, 15 * 1000);
                 return;
             }
@@ -124,7 +122,7 @@ class WS {
         this.registered = false;
         this.registerResp = false;
         this.hbStarted = false;
-        this.ws.send(JSON.stringify(reg));
+        this.ws!.send(JSON.stringify(reg));
     }
 
     send(method: string, path: string, webSocketApiType?: WebSocketApiType, body?: string | FormData): void {
@@ -149,7 +147,7 @@ class WS {
                 path: path,
                 body: data || body || '',
             };
-            this.ws.send(JSON.stringify(msg));
+            this.ws!.send(JSON.stringify(msg));
             return;
         }
 
@@ -169,7 +167,7 @@ class WS {
                 path: path,
                 body: data || body || '',
             };
-            this.ws.send(JSON.stringify(msg));
+            this.ws!.send(JSON.stringify(msg));
             return;
         }
         // else signature mode
@@ -184,7 +182,7 @@ class WS {
             isBase64: 0,
             body: data || body || '',
         };
-        this.ws.send(JSON.stringify(msg));
+        this.ws!.send(JSON.stringify(msg));
         return;
     }
 

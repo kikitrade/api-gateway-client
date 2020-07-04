@@ -1,5 +1,5 @@
 import {parse, UrlWithParsedQuery} from 'url';
-import crypto from 'crypto';
+import CryptoJS from 'crypto-js';
 
 import uuid from 'uuid';
 import {ParsedUrlQuery} from "querystring";
@@ -12,7 +12,7 @@ function seqInc() {
     return seq++;
 }
 
-type Stage = 'STAGE' | 'RELEASE';
+type Stage = 'TEST' | 'RELEASE';
 type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER';
 
 interface Header {
@@ -78,14 +78,11 @@ class Util {
     }
 
     sign(stringToSign: string) {
-        return crypto.createHmac('sha256', this.appSecret)
-            .update(stringToSign, 'utf8').digest('base64');
+        return CryptoJS.HmacSHA256(stringToSign, this.appSecret).toString(CryptoJS.enc.Base64);
     }
 
     md5(content: string) {
-        return crypto.createHash('md5')
-            .update(content, 'utf8')
-            .digest('base64');
+        return CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
     }
 
     getSignHeaderKeys(headers: {}) {
@@ -176,4 +173,4 @@ class Util {
     }
 }
 
-export {Util, Stage, seqInc, WebSocketApiType, Content_Type_Form_Data, Content_Type_Json_Data}
+export {Util, Stage, seqInc, WebSocketApiType, Content_Type_Form_Data, Content_Type_Json_Data, FormData}

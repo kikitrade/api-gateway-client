@@ -1,18 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const uuid_1 = __importDefault(require("uuid"));
-const util_1 = require("./util");
-const url_1 = __importStar(require("url"));
+import uuid from 'uuid';
+import { Content_Type_Form_Data, Content_Type_Json_Data, seqInc, Util } from './util';
+import url, { parse } from 'url';
 class WS {
     constructor(config) {
         this.registered = false;
@@ -21,19 +9,17 @@ class WS {
         this.autoConnect = true;
         this.config = config;
         this.timer = null;
-        this.host = url_1.default.parse(config.url).host;
+        this.host = url.parse(config.url).host;
         if (config.registerPath) {
             this.registerPath = config.registerPath;
         }
         if (config.unregisterPath) {
             this.unregisterPath = config.unregisterPath;
         }
-        this.ws = new WebSocket(this.config.url);
+        this.ws = null;
     }
     register(update, deviceId, bodyInJson) {
-        if (this.registered) {
-            throw new Error('unregister the previous subscription to call register');
-        }
+        this.ws = new WebSocket(this.config.url);
         let that = this;
         this.ws.onopen = function open() {
             console.log('open:');
@@ -117,8 +103,8 @@ class WS {
                 method: method,
                 host: this.host,
                 headers: Object.assign({
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'isBase64': 0,
@@ -135,8 +121,8 @@ class WS {
                 method: method,
                 host: this.host,
                 headers: Object.assign({
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'Authorization': `APPCODE ${this.config.appCode}`,
@@ -150,8 +136,8 @@ class WS {
             return;
         }
         // else signature mode
-        const util = new util_1.Util(this.config.appKey, this.config.appSecret, this.config.stage);
-        const headers = util.createSignedRequestHeaders('POST', new URL(path, this.config.url).toString(), {}, (body && body instanceof FormData) ? util_1.Content_Type_Form_Data : util_1.Content_Type_Json_Data, util_1.Content_Type_Json_Data, webSocketApiType, body);
+        const util = new Util(this.config.appKey, this.config.appSecret, this.config.stage);
+        const headers = util.createSignedRequestHeaders('POST', new URL(path, this.config.url).toString(), {}, (body && body instanceof FormData) ? Content_Type_Form_Data : Content_Type_Json_Data, Content_Type_Json_Data, webSocketApiType, body);
         const msg = {
             method: 'POST',
             host: this.host,
@@ -175,8 +161,8 @@ class WS {
                 host: host,
                 headers: {
                     'x-ca-websocket_api_type': 'REGISTER',
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'isBase64': 0,
@@ -193,8 +179,8 @@ class WS {
                 host: host,
                 headers: {
                     'x-ca-websocket_api_type': 'REGISTER',
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'Authorization': `APPCODE ${this.config.appCode}`,
@@ -207,8 +193,8 @@ class WS {
             return msg;
         }
         // else signature mode
-        const util = new util_1.Util(this.config.appKey, this.config.appSecret, this.config.stage);
-        const headers = util.createSignedRequestHeaders('POST', new URL(registerPath, this.config.url).toString(), {}, (body && body instanceof FormData) ? util_1.Content_Type_Form_Data : util_1.Content_Type_Json_Data, util_1.Content_Type_Json_Data, 'REGISTER', body);
+        const util = new Util(this.config.appKey, this.config.appSecret, this.config.stage);
+        const headers = util.createSignedRequestHeaders('POST', new URL(registerPath, this.config.url).toString(), {}, (body && body instanceof FormData) ? Content_Type_Form_Data : Content_Type_Json_Data, Content_Type_Json_Data, 'REGISTER', body);
         const msg = {
             method: 'POST',
             host: host,
@@ -231,8 +217,8 @@ class WS {
                 host: host,
                 headers: {
                     'x-ca-websocket_api_type': 'UNREGISTER',
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'isBase64': 0,
@@ -249,8 +235,8 @@ class WS {
                 host: host,
                 headers: {
                     'x-ca-websocket_api_type': 'UNREGISTER',
-                    'x-ca-seq': new Number(util_1.seqInc()).toString(),
-                    'x-ca-nonce': uuid_1.default.v4().toString(),
+                    'x-ca-seq': new Number(seqInc()).toString(),
+                    'x-ca-nonce': uuid.v4().toString(),
                     'date': new Date().toUTCString(),
                     'x-ca-timestamp': new Date().getTime().toString(),
                     'ca_version': '1',
@@ -263,8 +249,8 @@ class WS {
             return msg;
         }
         // else signature mode
-        const util = new util_1.Util(this.config.appKey, this.config.appSecret, this.config.stage);
-        const headers = util.createSignedRequestHeaders('POST', new URL(unregisterPath, this.config.url).toString(), {}, (body && body instanceof FormData) ? util_1.Content_Type_Form_Data : util_1.Content_Type_Json_Data, util_1.Content_Type_Json_Data, 'UNREGISTER', body);
+        const util = new Util(this.config.appKey, this.config.appSecret, this.config.stage);
+        const headers = util.createSignedRequestHeaders('POST', new URL(unregisterPath, this.config.url).toString(), {}, (body && body instanceof FormData) ? Content_Type_Form_Data : Content_Type_Json_Data, Content_Type_Json_Data, 'UNREGISTER', body);
         const msg = {
             method: 'POST',
             host: host,
@@ -276,13 +262,13 @@ class WS {
         return msg;
     }
     formDataString(unregisterPath, body) {
-        const parsedUrl = url_1.parse(new URL(unregisterPath, this.config.url).toString(), true);
+        const parsedUrl = parse(new URL(unregisterPath, this.config.url).toString(), true);
         let fullQuery = Object.assign(parsedUrl.query, body);
-        const parametersList = util_1.Util.buildParameters(fullQuery);
+        const parametersList = Util.buildParameters(fullQuery);
         if (parametersList.length > 0) {
             return parametersList.join('&');
         }
         return '';
     }
 }
-exports.WS = WS;
+export { WS };

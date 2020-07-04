@@ -3,7 +3,7 @@ import { ParsedUrlQuery } from "querystring";
 declare const Content_Type_Form_Data = "application/x-www-form-urlencoded";
 declare const Content_Type_Json_Data = "application/json";
 declare function seqInc(): number;
-declare type Stage = 'STAGE' | 'RELEASE';
+declare type Stage = 'TEST' | 'RELEASE';
 declare type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER';
 interface Header {
     [key: string]: any | any[];
@@ -26,5 +26,5 @@ declare class Util {
     getSignedHeadersString(signHeaders: Header, headers: Header): string;
     createSignedRequestHeaders(method: string, url: string, requestHeaders: Header, contentType: string, acceptType: string, webSocketApiType?: WebSocketApiType, body?: string | FormData, deviceId?: string): Header;
 }
-export { Util, Stage, seqInc, WebSocketApiType, Content_Type_Form_Data, Content_Type_Json_Data };
+export { Util, Stage, seqInc, WebSocketApiType, Content_Type_Form_Data, Content_Type_Json_Data, FormData };
 //# sourceMappingURL=util.d.ts.map
