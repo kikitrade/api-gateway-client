@@ -1,5 +1,5 @@
-import uuid from 'uuid';
-import { Content_Type_Form_Data, Content_Type_Json_Data, seqInc, Util } from './util';
+import { v4 } from 'uuid';
+import { Accept_JSON, Content_Type_Form_Data, Content_Type_Json_Data, seqInc, Util } from './util';
 import url, { parse } from 'url';
 class WS {
     constructor(config) {
@@ -94,50 +94,20 @@ class WS {
     }
     send(method, path, webSocketApiType, body) {
         let data = '';
+        let contentType = Content_Type_Json_Data;
         //if form data, else json
         if (body && body instanceof FormData) {
             data = this.formDataString(path, body);
+            contentType = Content_Type_Form_Data;
         }
-        if (this.config.authType === 'none') {
-            const msg = {
-                method: method,
-                host: this.host,
-                headers: Object.assign({
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'isBase64': 0,
-                    'ca_version': '1',
-                }, webSocketApiType ? { 'x-ca-websocket_api_type': webSocketApiType } : {}),
-                path: path,
-                body: data || body || '',
-            };
+        if (this.config.authType === 'none' || this.config.authType === 'appCode') {
+            const msg = this.createMsg(method, this.host, path, 'COMMON', contentType, Accept_JSON, data);
             this.ws.send(JSON.stringify(msg));
-            return;
-        }
-        if (this.config.authType === 'appCode') {
-            const msg = {
-                method: method,
-                host: this.host,
-                headers: Object.assign({
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'Authorization': `APPCODE ${this.config.appCode}`,
-                    'isBase64': 0,
-                    'ca_version': '1',
-                }, webSocketApiType ? { 'x-ca-websocket_api_type': webSocketApiType } : {}),
-                path: path,
-                body: data || body || '',
-            };
-            this.ws.send(JSON.stringify(msg));
-            return;
+            return msg;
         }
         // else signature mode
         const util = new Util(this.config.appKey, this.config.appSecret, this.config.stage);
-        const headers = util.createSignedRequestHeaders('POST', new URL(path, this.config.url).toString(), {}, (body && body instanceof FormData) ? Content_Type_Form_Data : Content_Type_Json_Data, Content_Type_Json_Data, webSocketApiType, body);
+        const headers = util.createSignedRequestHeaders('POST', new URL(path, this.config.url).toString(), {}, contentType, Content_Type_Json_Data, webSocketApiType, body);
         const msg = {
             method: 'POST',
             host: this.host,
@@ -151,45 +121,14 @@ class WS {
     }
     regMsg(host, registerPath = '/register', body) {
         let data = '';
+        let contentType = Content_Type_Json_Data;
         //if form data, else json
         if (body && body instanceof FormData) {
             data = this.formDataString(registerPath, body);
+            contentType = Content_Type_Form_Data;
         }
-        if (this.config.authType === 'none') {
-            const msg = {
-                method: 'POST',
-                host: host,
-                headers: {
-                    'x-ca-websocket_api_type': 'REGISTER',
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'isBase64': 0,
-                    'ca_version': '1',
-                },
-                path: registerPath,
-                body: data || body || '',
-            };
-            return msg;
-        }
-        if (this.config.authType === 'appCode') {
-            const msg = {
-                method: 'POST',
-                host: host,
-                headers: {
-                    'x-ca-websocket_api_type': 'REGISTER',
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'Authorization': `APPCODE ${this.config.appCode}`,
-                    'isBase64': 0,
-                    'ca_version': '1',
-                },
-                path: registerPath,
-                body: data || body || '',
-            };
+        if (this.config.authType === 'none' || this.config.authType === 'appCode') {
+            const msg = this.createMsg('POST', host, registerPath, 'REGISTER', contentType, Accept_JSON, data);
             return msg;
         }
         // else signature mode
@@ -205,52 +144,49 @@ class WS {
         };
         return msg;
     }
+    createMsg(method, host, path, api_type = 'COMMON', content_type, accept, body) {
+        const msg = {
+            method: method,
+            host: host,
+            headers: {
+                'content-type': [content_type],
+                'accept': [accept],
+                'x-ca-stage': [this.config.stage],
+                'x-ca-websocket_api_type': [api_type],
+                'x-ca-seq': [new Number(seqInc()).toString()],
+                'x-ca-nonce': [v4().toString()],
+                'date': [new Date().toUTCString()],
+                'x-ca-timestamp': [new Date().getTime().toString()],
+                'ca_version': ['1'],
+            },
+            path: path,
+            'isBase64': 0,
+        };
+        if (this.config.appCode) {
+            msg.headers['Authorization'] = [`APPCODE ${this.config.appCode}`];
+        }
+        if (body) {
+            msg.body = body;
+            msg.headers['content-md5'] = [Util.md5(body)];
+        }
+        return msg;
+    }
     unregMsg(host, unregisterPath = '/unregister', body) {
         let data = '';
-        //if form data, else json
+        let contentType = Content_Type_Json_Data;
+        //处理body， 如果是form data， 则格式化为 a=1&b=2这样的字符串
+        //如果本身体是json string， 则需要添加header， 里面有md5
         if (body && body instanceof FormData) {
             data = this.formDataString(unregisterPath, body);
+            contentType = Content_Type_Form_Data;
         }
-        if (this.config.authType === 'none') {
-            const msg = {
-                method: 'POST',
-                host: host,
-                headers: {
-                    'x-ca-websocket_api_type': 'UNREGISTER',
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'isBase64': 0,
-                    'ca_version': '1',
-                },
-                path: unregisterPath,
-                body: data || body || '',
-            };
-            return msg;
-        }
-        if (this.config.authType === 'appCode') {
-            const msg = {
-                method: 'POST',
-                host: host,
-                headers: {
-                    'x-ca-websocket_api_type': 'UNREGISTER',
-                    'x-ca-seq': new Number(seqInc()).toString(),
-                    'x-ca-nonce': uuid.v4().toString(),
-                    'date': new Date().toUTCString(),
-                    'x-ca-timestamp': new Date().getTime().toString(),
-                    'ca_version': '1',
-                    'isBase64': 0,
-                    'Authorization': `APPCODE ${this.config.appCode}`
-                },
-                path: unregisterPath,
-                body: data || body || '',
-            };
+        if (this.config.authType === 'none' || this.config.authType === 'appCode') {
+            const msg = this.createMsg('POST', host, unregisterPath, 'UNREGISTER', contentType, Accept_JSON, data);
             return msg;
         }
         // else signature mode
         const util = new Util(this.config.appKey, this.config.appSecret, this.config.stage);
-        const headers = util.createSignedRequestHeaders('POST', new URL(unregisterPath, this.config.url).toString(), {}, (body && body instanceof FormData) ? Content_Type_Form_Data : Content_Type_Json_Data, Content_Type_Json_Data, 'UNREGISTER', body);
+        const headers = util.createSignedRequestHeaders('POST', new URL(unregisterPath, this.config.url).toString(), {}, contentType, Content_Type_Json_Data, 'UNREGISTER', body);
         const msg = {
             method: 'POST',
             host: host,

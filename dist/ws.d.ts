@@ -1,4 +1,4 @@
-import { WebSocketApiType, FormData } from './util';
+import { FormData, WebSocketApiType } from './util';
 import Timeout = NodeJS.Timeout;
 interface EventListener {
     (msg: any): void;
@@ -29,6 +29,7 @@ declare class WS {
     unregister(body?: string | FormData): void;
     send(method: string, path: string, webSocketApiType?: WebSocketApiType, body?: string | FormData): void;
     private regMsg;
+    private createMsg;
     private unregMsg;
     private formDataString;
 }
