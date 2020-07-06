@@ -1,7 +1,6 @@
 import {parse, UrlWithParsedQuery} from 'url';
 import CryptoJS from 'crypto-js';
-
-import uuid from 'uuid';
+import {v4} from 'uuid';
 import {ParsedUrlQuery} from "querystring";
 
 const Content_Type_Form_Data = 'application/x-www-form-urlencoded; charset=utf-8';
@@ -130,7 +129,7 @@ class Util {
             'ca_version': ['1'],
             'x-ca-timestamp': [Date.now()],
             'x-ca-key': [this.appKey],
-            'x-ca-nonce': [uuid.v4()],
+            'x-ca-nonce': [v4()],
             'x-ca-seq': [Number(seqInc()).toString()],
             'x-ca-stage': [this.stage],
         }, headers, extra);

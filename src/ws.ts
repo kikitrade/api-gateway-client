@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import {v4} from 'uuid';
 import {
     Accept_JSON,
     Content_Type_Form_Data,
@@ -201,7 +201,7 @@ class WS {
                 'x-ca-stage': [this.config.stage],
                 'x-ca-websocket_api_type': [api_type],
                 'x-ca-seq': [new Number(seqInc()).toString()],
-                'x-ca-nonce': [uuid.v4().toString()],
+                'x-ca-nonce': [v4().toString()],
                 'date': [new Date().toUTCString()],
                 'x-ca-timestamp': [new Date().getTime().toString()],
                 'ca_version': ['1'],
