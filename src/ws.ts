@@ -88,6 +88,15 @@ class WS {
             }
 
             if (!that.registerResp) {
+                try{
+                    const msg = JSON.parse(event.data);
+                    if (msg.status > 400){
+                        that.ws!.close();
+                    }
+                }catch (e) {
+                    //ignore
+                }
+
                 that.registerResp = true;
                 //ignore register resp
                 return;
@@ -140,6 +149,8 @@ class WS {
         if (body && body instanceof FormData) {
             data = this.formDataString(path, body);
             contentType = Content_Type_Form_Data;
+        }else{
+            data = body as string;
         }
         if (this.config.authType === 'none' || this.config.authType === 'appCode') {
             const msg = this.createMsg(method, this.host, path, 'COMMON', contentType, Accept_JSON, data);
@@ -170,6 +181,8 @@ class WS {
         if (body && body instanceof FormData) {
             data = this.formDataString(registerPath, body);
             contentType = Content_Type_Form_Data;
+        }else{
+            data = body as string;
         }
         if (this.config.authType === 'none' || this.config.authType === 'appCode') {
             const msg = this.createMsg('POST', host, registerPath, 'REGISTER', contentType, Accept_JSON, data);
