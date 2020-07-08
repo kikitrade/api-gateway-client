@@ -92,6 +92,7 @@ class WS {
                     const msg = JSON.parse(event.data);
                     if (msg.status > 400){
                         that.ws!.close();
+                        that.reconnect(update, deviceId, bodyInJson);
                     }
                 }catch (e) {
                     //ignore
@@ -113,21 +114,25 @@ class WS {
             that.registerResp = false;
             that.hbStarted = false;
             //reconnect
-            if (that.autoConnect) {
-
-                if (that.ws) {
-                    //force close
-                    try {
-                        that.ws.close();
-                        that.ws = new WebSocket(this.url);
-                    } catch (e) {
-                        //slient
-                    }
-                }
-                that.register(update, deviceId, bodyInJson);
-            }
+            that.reconnect(update, deviceId, bodyInJson);
         };
     };
+
+    private reconnect(update: EventListener, deviceId: string, bodyInJson: string | FormData | undefined) {
+        if (this.autoConnect) {
+
+            if (this.ws) {
+                //force close
+                try {
+                    this.ws.close();
+                    this.ws = new WebSocket(this.config.url);
+                } catch (e) {
+                    //slient
+                }
+            }
+            this.register(update, deviceId, bodyInJson);
+        }
+    }
 
     unregister(body?: string | FormData) {
         let reg = this.unregMsg(this.host, this.unregisterPath, body);
@@ -146,7 +151,7 @@ class WS {
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json
-        if (body && body instanceof FormData) {
+        if (body && typeof(body) == 'object') {
             data = this.formDataString(path, body);
             contentType = Content_Type_Form_Data;
         }else{
@@ -178,7 +183,7 @@ class WS {
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json
-        if (body && body instanceof FormData) {
+        if (body && typeof(body) == 'object') {
             data = this.formDataString(registerPath, body);
             contentType = Content_Type_Form_Data;
         }else{
@@ -239,7 +244,7 @@ class WS {
         let contentType = Content_Type_Json_Data
         //处理body， 如果是form data， 则格式化为 a=1&b=2这样的字符串
         //如果本身体是json string， 则需要添加header， 里面有md5
-        if (body && body instanceof FormData) {
+        if (body && typeof(body) == 'object') {
             data = this.formDataString(unregisterPath, body);
             contentType = Content_Type_Form_Data;
         }
