@@ -63,10 +63,14 @@ class WS {
             console.log('data:', event.data);
 
             if (event.data.startsWith('NF#')) {
-                let msg = JSON.parse(event.data.substr(3));
-                if (msg) {
-                    console.log('receiving ' + msg);
-                    update(JSON.parse(msg));
+                try {
+                    let msg = JSON.parse(event.data.substr(3));
+                    if (msg) {
+                        console.log('receiving ' + msg);
+                        update(msg);
+                    }
+                } catch (e) {
+                    //ignore error from update callback
                 }
                 return;
             }
@@ -88,13 +92,13 @@ class WS {
             }
 
             if (!that.registerResp) {
-                try{
+                try {
                     const msg = JSON.parse(event.data);
-                    if (msg.status > 400){
+                    if (msg.status > 400) {
                         that.ws!.close();
                         that.reconnect(update, deviceId, bodyInJson);
                     }
-                }catch (e) {
+                } catch (e) {
                     //ignore
                 }
 
@@ -109,28 +113,6 @@ class WS {
             that.reconnect(update, deviceId, bodyInJson);
         };
     };
-
-    private reconnect(update: EventListener, deviceId: string, bodyInJson: string | FormData | undefined) {
-        if (this.autoConnect) {
-
-            if (this.ws) {
-                //force close
-                try {
-                    this.ws.close();
-                    if (this.timer) {
-                        clearInterval(this.timer);
-                        this.timer = null;
-                    }
-                    this.registered = false;
-                    this.registerResp = false;
-                    this.hbStarted = false;
-                } catch (e) {
-                    //slient
-                }
-            }
-            this.register(update, deviceId, bodyInJson);
-        }
-    }
 
     unregister(body?: string | FormData) {
         let reg = this.unregMsg(this.host, this.unregisterPath, body);
@@ -149,10 +131,10 @@ class WS {
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json
-        if (body && typeof(body) == 'object') {
+        if (body && typeof (body) == 'object') {
             data = this.formDataString(path, body);
             contentType = Content_Type_Form_Data;
-        }else{
+        } else {
             data = body as string;
         }
         if (this.config.authType === 'none' || this.config.authType === 'appCode') {
@@ -177,14 +159,36 @@ class WS {
         return;
     }
 
+    private reconnect(update: EventListener, deviceId: string, bodyInJson: string | FormData | undefined) {
+        if (this.autoConnect) {
+
+            if (this.ws) {
+                //force close
+                try {
+                    this.ws.close();
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                    }
+                    this.registered = false;
+                    this.registerResp = false;
+                    this.hbStarted = false;
+                } catch (e) {
+                    //slient
+                }
+            }
+            this.register(update, deviceId, bodyInJson);
+        }
+    }
+
     private regMsg(host: string, registerPath = '/register', body?: string | FormData) {
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json
-        if (body && typeof(body) == 'object') {
+        if (body && typeof (body) == 'object') {
             data = this.formDataString(registerPath, body);
             contentType = Content_Type_Form_Data;
-        }else{
+        } else {
             data = body as string;
         }
         if (this.config.authType === 'none' || this.config.authType === 'appCode') {
@@ -242,7 +246,7 @@ class WS {
         let contentType = Content_Type_Json_Data
         //处理body， 如果是form data， 则格式化为 a=1&b=2这样的字符串
         //如果本身体是json string， 则需要添加header， 里面有md5
-        if (body && typeof(body) == 'object') {
+        if (body && typeof (body) == 'object') {
             data = this.formDataString(unregisterPath, body);
             contentType = Content_Type_Form_Data;
         }

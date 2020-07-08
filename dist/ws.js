@@ -28,10 +28,15 @@ class WS {
         this.ws.onmessage = function incoming(event) {
             console.log('data:', event.data);
             if (event.data.startsWith('NF#')) {
-                let msg = JSON.parse(event.data.substr(3));
-                if (msg) {
-                    console.log('receiving ' + msg);
-                    update(JSON.parse(msg));
+                try {
+                    let msg = JSON.parse(event.data.substr(3));
+                    if (msg) {
+                        console.log('receiving ' + msg);
+                        update(msg);
+                    }
+                }
+                catch (e) {
+                    //ignore error from update callback
                 }
                 return;
             }
@@ -70,27 +75,6 @@ class WS {
         };
     }
     ;
-    reconnect(update, deviceId, bodyInJson) {
-        if (this.autoConnect) {
-            if (this.ws) {
-                //force close
-                try {
-                    this.ws.close();
-                    if (this.timer) {
-                        clearInterval(this.timer);
-                        this.timer = null;
-                    }
-                    this.registered = false;
-                    this.registerResp = false;
-                    this.hbStarted = false;
-                }
-                catch (e) {
-                    //slient
-                }
-            }
-            this.register(update, deviceId, bodyInJson);
-        }
-    }
     unregister(body) {
         let reg = this.unregMsg(this.host, this.unregisterPath, body);
         this.autoConnect = false;
@@ -132,6 +116,27 @@ class WS {
         };
         this.ws.send(JSON.stringify(msg));
         return;
+    }
+    reconnect(update, deviceId, bodyInJson) {
+        if (this.autoConnect) {
+            if (this.ws) {
+                //force close
+                try {
+                    this.ws.close();
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                    }
+                    this.registered = false;
+                    this.registerResp = false;
+                    this.hbStarted = false;
+                }
+                catch (e) {
+                    //slient
+                }
+            }
+            this.register(update, deviceId, bodyInJson);
+        }
     }
     regMsg(host, registerPath = '/register', body) {
         let data = '';
