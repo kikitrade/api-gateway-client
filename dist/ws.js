@@ -51,7 +51,7 @@ class WS {
             if (!that.registerResp) {
                 try {
                     const msg = JSON.parse(event.data);
-                    if (msg.status > 300) {
+                    if (msg.status > 400) {
                         that.ws.close();
                     }
                 }
@@ -213,7 +213,7 @@ class WS {
         return msg;
     }
     formDataString(unregisterPath, body) {
-        const parsedUrl = parse(new URL(unregisterPath, this.config.url).toString(), true);
+        const parsedUrl = parse(new URL(unregisterPath).toString(), true);
         let fullQuery = Object.assign(parsedUrl.query, body);
         const parametersList = Util.buildParameters(fullQuery);
         if (parametersList.length > 0) {

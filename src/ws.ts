@@ -266,7 +266,7 @@ class WS {
     }
 
     private formDataString(unregisterPath: string, body: FormData): string {
-        const parsedUrl = parse(new URL(unregisterPath, this.config.url).toString(), true);
+        const parsedUrl = parse(new URL(unregisterPath).toString(), true);
         let fullQuery = Object.assign(parsedUrl.query, body);
         const parametersList = Util.buildParameters(fullQuery);
         if (parametersList.length > 0) {
