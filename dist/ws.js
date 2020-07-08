@@ -66,14 +66,6 @@ class WS {
         };
         this.ws.onclose = function (event) {
             console.log('ws closed:', event);
-            if (that.timer) {
-                clearInterval(that.timer);
-                that.timer = null;
-            }
-            that.registered = false;
-            that.registerResp = false;
-            that.hbStarted = false;
-            //reconnect
             that.reconnect(update, deviceId, bodyInJson);
         };
     }
@@ -84,7 +76,13 @@ class WS {
                 //force close
                 try {
                     this.ws.close();
-                    this.ws = new WebSocket(this.config.url);
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                    }
+                    this.registered = false;
+                    this.registerResp = false;
+                    this.hbStarted = false;
                 }
                 catch (e) {
                     //slient
