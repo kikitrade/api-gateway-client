@@ -13,7 +13,7 @@ function seqInc() {
 }
 
 type Stage = 'TEST' | 'RELEASE';
-type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER';
+type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER' | 'COMMON';
 
 interface Header {
     [key: string]: any | any[];

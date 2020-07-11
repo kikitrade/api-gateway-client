@@ -127,7 +127,7 @@ class WS {
         this.ws!.send(JSON.stringify(reg));
     }
 
-    send(method: string, path: string, webSocketApiType?: WebSocketApiType, body?: string | FormData): void {
+    send(method: string, path: string, webSocketApiType: WebSocketApiType = 'COMMON', body?: string | FormData): void {
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json

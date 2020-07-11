@@ -5,7 +5,7 @@ declare const Content_Type_Json_Data = "application/octet-stream; charset=utf-8"
 declare const Accept_JSON = "application/json; charset=utf-8";
 declare function seqInc(): number;
 declare type Stage = 'TEST' | 'RELEASE';
-declare type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER';
+declare type WebSocketApiType = 'NOTIFY' | 'REGISTER' | 'UNREGISTER' | 'COMMON';
 interface Header {
     [key: string]: any | any[];
 }
