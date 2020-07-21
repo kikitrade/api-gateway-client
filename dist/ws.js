@@ -88,6 +88,9 @@ class WS {
         this.ws.send(JSON.stringify(reg));
     }
     send(method, path, webSocketApiType = 'COMMON', body) {
+        if (this.ws && this.ws.readyState != 1) {
+            return;
+        }
         let data = '';
         let contentType = Content_Type_Json_Data;
         //if form data, else json
