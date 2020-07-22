@@ -25,6 +25,7 @@ declare class WS {
     host: string;
     config: Config;
     constructor(config: Config);
+    do_send(msg: string): void;
     register(update: EventListener, deviceId: string, bodyInJson?: string | FormData): void;
     unregister(body?: string | FormData): void;
     send(method: string, path: string, webSocketApiType?: WebSocketApiType, body?: string | FormData): void;

@@ -18,12 +18,22 @@ class WS {
         }
         this.ws = null;
     }
+    do_send(msg) {
+        if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+            try {
+                this.ws.send(msg);
+            }
+            catch (e) {
+                //
+            }
+        }
+    }
     register(update, deviceId, bodyInJson) {
         this.ws = new WebSocket(this.config.url);
         let that = this;
         this.ws.onopen = function open() {
             console.log('open:');
-            that.ws.send('RG#' + deviceId);
+            that.do_send('RG#' + deviceId);
         };
         this.ws.onmessage = function incoming(event) {
             console.log('data:', event.data);
@@ -45,11 +55,11 @@ class WS {
                 if (!that.registered) {
                     that.registered = true;
                     let reg = that.regMsg(that.host, that.registerPath, bodyInJson);
-                    that.ws.send(JSON.stringify(reg));
+                    that.do_send(JSON.stringify(reg));
                 }
                 that.hbStarted = true;
                 that.timer = setInterval(function () {
-                    that.ws.send('H1');
+                    that.do_send('H1');
                 }, 15 * 1000);
                 return;
             }
@@ -85,7 +95,7 @@ class WS {
         this.registered = false;
         this.registerResp = false;
         this.hbStarted = false;
-        this.ws.send(JSON.stringify(reg));
+        this.do_send(JSON.stringify(reg));
     }
     send(method, path, webSocketApiType = 'COMMON', body) {
         if (this.ws && this.ws.readyState != 1) {
@@ -103,7 +113,7 @@ class WS {
         }
         if (this.config.authType === 'none' || this.config.authType === 'appCode') {
             const msg = this.createMsg(method, this.host, path, 'COMMON', contentType, Accept_JSON, data);
-            this.ws.send(JSON.stringify(msg));
+            this.do_send(JSON.stringify(msg));
             return msg;
         }
         // else signature mode
@@ -117,7 +127,7 @@ class WS {
             isBase64: 0,
             body: data || body || '',
         };
-        this.ws.send(JSON.stringify(msg));
+        this.do_send(JSON.stringify(msg));
         return;
     }
     reconnect(update, deviceId, bodyInJson) {
