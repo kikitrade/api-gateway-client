@@ -101,6 +101,16 @@ class WS {
                 return;
             }
 
+            if (event.data.startsWith('OS#') || event.data.startsWith('CR#')) {
+                try{
+                    that.ws!.close();
+                    that.reconnect(update, deviceId, bodyInJson);
+                }catch (e) {
+                    that.reconnect(update, deviceId, bodyInJson);
+                }
+                return;
+            }
+
             if (!that.registerResp) {
                 try {
                     const msg = JSON.parse(event.data);
