@@ -63,7 +63,7 @@ class WS {
                 }, 15 * 1000);
                 return;
             }
-            if (event.data.startsWith('OS#') || event.data.startsWith('CR#')) {
+            if (event.data.startsWith('OS') || event.data.startsWith('CR') || event.data.startsWith('HF') || event.data.startsWith('CB')) {
                 try {
                     that.ws.close();
                     that.reconnect(update, deviceId, bodyInJson);
