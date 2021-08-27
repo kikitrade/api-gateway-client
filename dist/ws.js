@@ -52,6 +52,7 @@ class WS {
             }
             if (!that.hbStarted && event.data.startsWith('RO#')) {
                 console.log('login successfully');
+                that.lastDeviceId = deviceId;
                 if (!that.registered) {
                     that.registered = true;
                     let reg = that.regMsg(that.host, that.registerPath, bodyInJson);
@@ -63,7 +64,7 @@ class WS {
                 }, 15 * 1000);
                 return;
             }
-            if (event.data.startsWith('OS') || event.data.startsWith('CR') || event.data.startsWith('HF') || event.data.startsWith('CB')) {
+            if (event.data.startsWith('OS') || event.data.startsWith('CR') || event.data.startsWith('HF') || event.data.startsWith('CB') || event.data.startsWith('RF')) {
                 try {
                     that.ws.close();
                     that.reconnect(update, deviceId, bodyInJson);
@@ -187,20 +188,24 @@ class WS {
         return msg;
     }
     createMsg(method, host, path, api_type = 'COMMON', content_type, accept, body) {
+        let headers = {
+            'content-type': [content_type],
+            'accept': [accept],
+            'x-ca-stage': [this.config.stage],
+            'x-ca-websocket_api_type': [api_type],
+            'x-ca-seq': [new Number(seqInc()).toString()],
+            'x-ca-nonce': [v4().toString()],
+            'date': [new Date().toUTCString()],
+            'x-ca-timestamp': [new Date().getTime().toString()],
+            'ca_version': ['1'],
+        };
+        if (api_type === 'COMMON' && this.lastDeviceId) {
+            headers['x-ca-deviceid'] = [this.lastDeviceId];
+        }
         const msg = {
             method: method,
             host: host,
-            headers: {
-                'content-type': [content_type],
-                'accept': [accept],
-                'x-ca-stage': [this.config.stage],
-                'x-ca-websocket_api_type': [api_type],
-                'x-ca-seq': [new Number(seqInc()).toString()],
-                'x-ca-nonce': [v4().toString()],
-                'date': [new Date().toUTCString()],
-                'x-ca-timestamp': [new Date().getTime().toString()],
-                'ca_version': ['1'],
-            },
+            headers,
             path: path,
             'isBase64': 0,
         };
@@ -239,8 +244,8 @@ class WS {
         };
         return msg;
     }
-    formDataString(unregisterPath, body) {
-        const parsedUrl = parse(new URL(unregisterPath).toString(), true);
+    formDataString(urlValue, body) {
+        const parsedUrl = parse(urlValue, true);
         let fullQuery = Object.assign(parsedUrl.query, body);
         const parametersList = Util.buildParameters(fullQuery);
         if (parametersList.length > 0) {

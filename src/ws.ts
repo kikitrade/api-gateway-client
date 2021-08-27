@@ -37,6 +37,7 @@ class WS {
     unregisterPath?: string;
     host: string;
     config: Config;
+    lastDeviceId?: string;
 
     constructor(config: Config) {
         this.config = config;
@@ -87,7 +88,7 @@ class WS {
 
             if (!that.hbStarted && event.data.startsWith('RO#')) {
                 console.log('login successfully');
-
+                that.lastDeviceId = deviceId;
                 if (!that.registered) {
                     that.registered = true;
                     let reg = that.regMsg(that.host, that.registerPath, bodyInJson);
@@ -232,20 +233,24 @@ class WS {
     }
 
     private createMsg(method: string, host: string, path: string, api_type = 'COMMON', content_type: string, accept: string, body?: string) {
+        let headers: any =  {
+            'content-type': [content_type],
+            'accept': [accept],
+            'x-ca-stage': [this.config.stage],
+            'x-ca-websocket_api_type': [api_type],
+            'x-ca-seq': [new Number(seqInc()).toString()],
+            'x-ca-nonce': [v4().toString()],
+            'date': [new Date().toUTCString()],
+            'x-ca-timestamp': [new Date().getTime().toString()],
+            'ca_version': ['1'],
+        };
+        if (api_type === 'COMMON' && this.lastDeviceId) {
+            headers['x-ca-deviceid'] = [this.lastDeviceId];
+        }
         const msg: any = {
             method: method,
             host: host,
-            headers: {
-                'content-type': [content_type],
-                'accept': [accept],
-                'x-ca-stage': [this.config.stage],
-                'x-ca-websocket_api_type': [api_type],
-                'x-ca-seq': [new Number(seqInc()).toString()],
-                'x-ca-nonce': [v4().toString()],
-                'date': [new Date().toUTCString()],
-                'x-ca-timestamp': [new Date().getTime().toString()],
-                'ca_version': ['1'],
-            },
+            headers,
             path: path,
             'isBase64': 0,
 
@@ -292,8 +297,8 @@ class WS {
         return msg;
     }
 
-    private formDataString(unregisterPath: string, body: FormData): string {
-        const parsedUrl = parse(new URL(unregisterPath).toString(), true);
+    private formDataString(urlValue: string, body: FormData): string {
+        const parsedUrl = parse(urlValue, true);
         let fullQuery = Object.assign(parsedUrl.query, body);
         const parametersList = Util.buildParameters(fullQuery);
         if (parametersList.length > 0) {

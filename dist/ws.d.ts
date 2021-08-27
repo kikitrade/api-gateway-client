@@ -24,6 +24,7 @@ declare class WS {
     unregisterPath?: string;
     host: string;
     config: Config;
+    lastDeviceId?: string;
     constructor(config: Config);
     do_send(msg: string): void;
     register(update: EventListener, deviceId: string, bodyInJson?: string | FormData): void;
