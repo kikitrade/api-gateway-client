@@ -2,6 +2,8 @@ import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react';
 import { WS } from '@kikitrade/api-gateway-client';
+import { config } from 'dotenv'
+config();
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -29,9 +31,9 @@ function App() {
 
   useEffect(() => {
     let ws = new WS({
-      url: "ws://wstest.kikitrade.com:8080",
-      authType: "appCode",
-      appCode: "c022929d0e1f4b0d8eace9cb9934bf0d",
+      url: process.env.url,
+      authType: process.env.authType,
+      appCode: process.env.appCode,
       stage: "TEST",
       registerPath: "/api/register",
       unregisterPath: "/api/unregister",
