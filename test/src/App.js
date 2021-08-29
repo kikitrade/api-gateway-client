@@ -1,9 +1,7 @@
-import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react';
 import { WS } from '@kikitrade/api-gateway-client';
-import { config } from 'dotenv'
-config();
+import env from 'react-dotenv'
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -30,22 +28,23 @@ function App() {
   };
 
   useEffect(() => {
+    console.log(env.url)
     let ws = new WS({
-      url: process.env.url,
-      authType: process.env.authType,
-      appCode: process.env.appCode,
+      url: env.url,
+      authType: env.authType,
+      appCode: env.appCode,
       stage: "TEST",
       registerPath: "/api/register",
       unregisterPath: "/api/unregister",
     });
 
-    ws.register(listener, "test111111", {
+    ws.register(listener, "test111111222", {
       room: "marketData",
       value: "",
     });
 
     setTimeout(() => {
-      ws.send("POST", "/api/room", "COMMON", { symbol: "BTC-USDT", room: "orderbook" });
+      ws.send("POST", "/api/room", "COMMON", { symbol: "BTC_USDT", room: "orderbook" });
     }, 5000);
   });
 
