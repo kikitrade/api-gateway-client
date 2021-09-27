@@ -15,7 +15,7 @@ function messageList(d) {
 function trim(l) {
   if (l.length > 5) {
     let excess = l.length - 5;
-    for (let i = 0; i < excess; i++) {
+    for (let c = 0; c < excess; c++) {
       l.shift();
     }
   }
@@ -43,12 +43,12 @@ class App extends React.Component {
       url: env.url,
       authType: env.authType,
       appCode: env.appCode,
-      stage: "TEST",
+      stage: "RELEASE",
       registerPath: "/api/register",
       unregisterPath: "/api/unregister",
     });
 
-    ws.register(this.listener, "sdeedd", {
+    ws.register(this.listener, "abcdefghijklmn", {
       room: "marketData",
       value: "",
     });
