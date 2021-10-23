@@ -3,8 +3,8 @@ import React from 'react';
 import { WS } from '@kikitrade/api-gateway-client';
 import env from 'react-dotenv'
 let i = 0;
-function messageList(d) {
-  return <p key={i++}>{JSON.stringify(d)}</p>
+function messageList(index, d) {
+  return <p key={index}>{JSON.stringify(d)}</p>
 }
 
 /**
@@ -32,6 +32,9 @@ class App extends React.Component {
     let that = this;
     this.listener = (data) => {
       let d = [];
+      if (data.type !== 'orderbook') {
+        return;
+      }
       d.push(this.state.messages);
       d.push(data);
       d = trim(d);
@@ -43,7 +46,7 @@ class App extends React.Component {
       url: env.url,
       authType: env.authType,
       appCode: env.appCode,
-      stage: "RELEASE",
+      stage: "TEST",
       registerPath: "/api/register",
       unregisterPath: "/api/unregister",
     });
@@ -63,7 +66,7 @@ class App extends React.Component {
       <div className="App">
         <header className="App-header">
           <p> messages: </p>
-          {this.state.messages.map(p => messageList(p))}
+          {this.state.messages.map((p,index) => messageList(index,p))}
 
         </header>
       </div>

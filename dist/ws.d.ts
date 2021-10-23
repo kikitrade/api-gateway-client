@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { FormData, WebSocketApiType } from './util';
 import Timeout = NodeJS.Timeout;
 interface EventListener {

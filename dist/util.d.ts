@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { UrlWithParsedQuery } from 'url';
 import { ParsedUrlQuery } from "querystring";
 declare const Content_Type_Form_Data = "application/x-www-form-urlencoded; charset=utf-8";
