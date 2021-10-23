@@ -57,7 +57,7 @@ class App extends React.Component {
     });
 
     setTimeout(() => {
-      ws.send("POST", "/api/room", "COMMON", { symbol: "BCH_USD", room: "orderbook" });
+      ws.send("POST", "/api/room", "COMMON", { symbol: "BTC_USDT", room: "orderbook" });
     }, 5000);
   }
 
